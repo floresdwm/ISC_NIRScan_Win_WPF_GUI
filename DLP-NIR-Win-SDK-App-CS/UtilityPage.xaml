@@ -1,0 +1,205 @@
+﻿<UserControl x:Class="DLP_NIR_Win_SDK_App_CS.UtilityPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:DLP_NIR_Win_SDK_App_CS"
+             mc:Ignorable="d" 
+             d:DesignHeight="640" d:DesignWidth="1272" FontFamily="Calibri" FontSize="16">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <GroupBox x:Name="GroupBox_ModelName" Header="Model Name" VerticalAlignment="Top">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TextBox_ModelName" TextWrapping="Wrap" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                <Button x:Name="Button_ModelNameSet" Content="Set" Width="75" Grid.Row="1" Margin="0,10,0,0" Click="Button_ModelNameSet_Click"/>
+                <Button x:Name="Button_ModelNameGet" Content="Get" Width="75" Grid.Column="1" Grid.Row="1" Margin="10,10,0,0" Click="Button_ModelNameGet_Click"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_SerialNumber" Header="Serial Number" Grid.Column="1" VerticalAlignment="Top" Margin="10,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TextBox_SerialNumber" TextWrapping="Wrap" Grid.ColumnSpan="2" VerticalAlignment="Center"/>
+                <Button x:Name="Button_SerialNumberSet" Content="Set" Width="75" Grid.Row="1" Margin="0,10,0,0" Click="Button_SerialNumberSet_Click"/>
+                <Button x:Name="Button_SerialNumberGet" Content="Get" Width="75" Grid.Column="1" Grid.Row="1" Margin="10,10,0,0" Click="Button_SerialNumberGet_Click"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_DateTime" Header="Date and Time" Grid.Row="1" VerticalAlignment="Top">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="Button_DateTimeSync" Content="Sync" Width="75" Grid.Row="1" Margin="0,10,0,0" Click="Button_DateTimeSync_Click"/>
+                <Button x:Name="Button_DateTimeGet" Content="Get" Width="75" Grid.Column="1" Grid.Row="1" Margin="10,10,0,0" Click="Button_DateTimeGet_Click"/>
+                <TextBox x:Name="TextBox_DateTime" TextWrapping="Wrap" VerticalAlignment="Center" Grid.ColumnSpan="2"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_LampUsage" Header="Lamp Usage" Grid.Column="1" Grid.Row="1" VerticalAlignment="Top" Margin="10,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="38*"/>
+                    <ColumnDefinition Width="38*"/>
+                    <ColumnDefinition Width="25*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TextBox_LampUsage" Grid.ColumnSpan="3" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <Label Content="(hours)" Grid.Column="3"/>
+                <Button x:Name="Button_LampUsageSet" Content="Set" Width="75" Grid.Row="1" Grid.ColumnSpan="2" Margin="0,10,0,0" Click="Button_LampUsageSet_Click"/>
+                <Button x:Name="Button_LampUsageGet" Content="Get" Width="75" Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2" Margin="10,10,0,0" Click="Button_LampUsageGet_Click"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_TivaFWUpdate" Header="TIVA Firmware Update" Grid.Column="2" Margin="10,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="116*"/>
+                    <ColumnDefinition Width="115*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="File Name"/>
+                <TextBox x:Name="TextBox_TivaFWPath" Grid.Column="1" Grid.ColumnSpan="2" TextWrapping="Wrap" VerticalAlignment="Center" Width="350"/>
+                <Button x:Name="Button_TivaFWBrowse" Content="Browse" Width="75" Grid.Column="3" VerticalAlignment="Center" Margin="10,0,0,0" Click="Button_TivaFWBrowse_Click"/>
+                <Button x:Name="Button_TivaFWUpdate" Content="Update" Width="75" Grid.Column="3" Grid.Row="1" Margin="10,10,0,0" Click="Button_TivaFWUpdate_Click"/>
+                <ProgressBar x:Name="ProgressBar_TivaFWUpdateStatus" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0"/>
+                <TextBlock x:Name="TextBlock_TivaFWUpdateStatus" Text="{Binding ElementName=ProgressBar_TivaFWUpdateStatus, Path=Value, StringFormat={}{0:0}%}" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <CheckBox x:Name="CheckBox_TivaFlashEmpty" Content="Tiva Flash is empty / erased" Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10,0,0"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_DLPC150FWUpdate" Header="DLPC150 Firmware Update" Grid.Column="2" Grid.Row="1" Margin="10,0,0,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="116*"/>
+                    <ColumnDefinition Width="115*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Content="File Name"/>
+                <TextBox x:Name="TextBox_DLPC150FWPath" Grid.ColumnSpan="2" Grid.Column="1" TextWrapping="Wrap" VerticalAlignment="Center" Width="350"/>
+                <Button x:Name="Button_DLPC150FWBrowse" Content="Browse" Width="75" Grid.Column="3" VerticalAlignment="Center" Margin="10,0,0,0" Click="Button_DLPC150FWBrowse_Click"/>
+                <Button x:Name="Button_DLPC150FWUpdate" Content="Update" Width="75" Grid.Column="3" Grid.Row="1" VerticalAlignment="Center" Margin="10,10,0,0" Click="Button_DLPC150FWUpdate_Click"/>
+                <ProgressBar x:Name="ProgressBar_DLPC150FWUpdateStatus" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0"/>
+                <TextBlock x:Name="TextBlock_DLPC150FWUpdateStatus" Text="{Binding ElementName=ProgressBar_DLPC150FWUpdateStatus, Path=Value, StringFormat={}{0:0}%}" Grid.Row="1" Grid.ColumnSpan="3" Margin="0,10,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_Sensors" Header="Sensors" Grid.Row="2" Grid.ColumnSpan="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Content="Battery Charger Status"/>
+                <Label x:Name="Label_SensorBattStatus" Grid.Column="1"/>
+                <Label Content="Battery Capacity" Grid.Row="1"/>
+                <Label x:Name="Label_SensorBattCapacity" Grid.Column="1" Grid.Row="1"/>
+                <Label Content="System Humidity" Grid.Row="2"/>
+                <Label x:Name="Label_SensorHumidity" Grid.Column="1" Grid.Row="2"/>
+                <Label Content="System Temp" Grid.Row="3"/>
+                <Label x:Name="Label_SensorHDCTemp" Grid.Column="1" Grid.Row="3"/>
+                <Label Content="Tiva Temp" Grid.Row="4"/>
+                <Label x:Name="Label_SensorTivaTemp" Grid.Column="1" Grid.Row="4"/>
+                <Label Content="Lamp Intensity" Grid.Row="5"/>
+                <Label x:Name="Label_SensorPhotoDetector" Grid.Column="1" Grid.Row="5"/>
+                <Button x:Name="Button_SensorRead" Grid.ColumnSpan="2" Content="Read" HorizontalAlignment="Center" Grid.Row="8" VerticalAlignment="Center" Width="75" Click="Button_SensorRead_Click"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="GroupBox_CalibCoeffs" Header="Calibration Coefficients" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Left" Margin="10,0,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Content="Cal Coeff Ver:"/>
+                <Label x:Name="Label_CalCoeffVer" Content="0" Grid.Column="1"/>
+                <Label Content="Ref Cal Ver:" Grid.Row="1" Margin="0,10,0,0"/>
+                <Label x:Name="Label_RefCalVer" Content="0" Grid.Column="1" Grid.Row="1" Margin="0,10,0,0"/>
+                <Label Content="Scan Cfg Ver:" Grid.Row="2" Margin="0,10,0,0"/>
+                <Label x:Name="Label_ScanCfgVer" Content="0" Grid.Column="1" Grid.Row="2" Margin="0,10,0,0"/>
+                <CheckBox x:Name="CheckBox_CalWriteEnable" Content="Write Enable" Grid.Row="4" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,10,0,0" Click="CheckBox_CalWriteEnable_Click"/>
+                <Label Content="Pix-Wave Coeff 0" Grid.Column="2"/>
+                <Label Content="Pix-Wave Coeff 1" Grid.Column="2" Grid.Row="1" Margin="0,10,0,0"/>
+                <Label Content="Pix-Wave Coeff 2" Grid.Column="2" Grid.Row="2" Margin="0,10,0,0"/>
+                <Label Content="Shift Vect Coeff 0" Grid.Column="2" Grid.Row="3" Margin="0,10,0,0"/>
+                <Label Content="Shift Vect Coeff 1" Grid.Column="2" Grid.Row="4" Margin="0,10,0,0"/>
+                <Label Content="Shift Vect Coeff 2" Grid.Column="2" Grid.Row="5" Margin="0,10,0,0"/>
+                <TextBox x:Name="TextBox_P2WCoeff0" Grid.Column="3" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                <TextBox x:Name="TextBox_P2WCoeff1" Grid.Column="3" Grid.Row="1" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                <TextBox x:Name="TextBox_P2WCoeff2" Grid.Column="3" Grid.Row="2" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                <TextBox x:Name="TextBox_ShiftVectCoeff0" Grid.Column="3" Grid.Row="3" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                <TextBox x:Name="TextBox_ShiftVectCoeff1" Grid.Column="3" Grid.Row="4" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                <TextBox x:Name="TextBox_ShiftVectCoeff2" Grid.Column="3" Grid.Row="5" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                <Button x:Name="Button_CalWriteGenCoeffs" Content="Write Generic Data" Grid.Row="5" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,10,0,0" Click="Button_CalWriteGenCoeffs_Click"/>
+                <Button x:Name="Button_CalRestoreDefaultCoeffs" Content="Restore Default" Grid.Row="6" Grid.ColumnSpan="2" Margin="0,10,0,0" Click="Button_CalRestoreDefaultCoeffs_Click"/>
+                <Button x:Name="Button_CalReadCoeffs" Content="Read Coeffs" Grid.Column="2" Grid.Row="6" Margin="10,10,10,0" Click="Button_CalReadCoeffs_Click"/>
+                <Button x:Name="Button_CalWriteCoeffs" Content="Write Coeffs" Grid.Column="3" Grid.Row="6" Margin="0,10,0,0" Click="Button_CalWriteCoeffs_Click"/>
+            </Grid>
+        </GroupBox>
+
+    </Grid>
+</UserControl>

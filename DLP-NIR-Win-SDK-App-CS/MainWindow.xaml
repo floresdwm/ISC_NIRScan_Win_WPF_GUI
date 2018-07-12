@@ -1,0 +1,50 @@
+﻿<Window x:Class="DLP_NIR_Win_SDK_App_CS.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DLP_NIR_Win_SDK_App_CS"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="720" Width="1280" FontSize="16" FontFamily="Calibri" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
+    <DockPanel x:Name="DockPanel_Main">
+        <Menu VerticalAlignment="Top" Margin="0" DockPanel.Dock="Top">
+            <MenuItem x:Name="MenuItem_Scan" Header="Scan" FontSize="16" FontFamily="Calibri" Click="MenuItem_Scan_Click"/>
+            <MenuItem x:Name="MenuItem_Utility" Header="Utility" FontSize="16" FontFamily="Calibri" Click="MenuItem_Utility_Click"/>
+            <MenuItem x:Name="MenuItem_Device" Header="Device" FontSize="16" FontFamily="Calibri">
+                <MenuItem x:Name="MenuItem_Info" Header="Information" Click="MenuItem_Info_Click"/>
+                <MenuItem x:Name="MenuItem_ResetSys" Header="Reset System" Click="MenuItem_ResetSys_Click"/>
+                <MenuItem x:Name="MenuItem_UpdateRef" Header="Update Reference Data" Click="MenuItem_UpdateRef_Click"/>
+                <MenuItem x:Name="MenuItem_SelectDevice" Header="Select Device"/>
+                <Separator x:Name="Separator_Advance"/>
+                <MenuItem x:Name="MenuItem_Advance" Header="Advance">
+                    <MenuItem x:Name="MenuItem_BackupFacRef" Header="Backup Factory Reference" Click="MenuItem_BackupFacRef_Click"/>
+                    <MenuItem x:Name="MenuItem_RestoreFacRef" Header="Restore Factory Reference" Click="MenuItem_RestoreFacRef_Click"/>
+                </MenuItem>
+                <Separator x:Name="Separator_ActKeyMGMT"/>
+                <MenuItem x:Name="MenuItem_ActKeyMGMT" Header="Activation Key Management" Click="MenuItem_ActKeyMGMT_Click"/>
+            </MenuItem>
+            <MenuItem x:Name="MenuItem_Help" Header="Help" FontSize="16" FontFamily="Calibri">
+                <MenuItem x:Name="MenuItem_License" Header="License Argeement" Click="MenuItem_License_Click"/>
+                <MenuItem x:Name="MenuItem_AboutUs" Header="About Us" Click="MenuItem_AboutUs_Click"/>
+            </MenuItem>
+        </Menu>
+        <StatusBar DockPanel.Dock="Bottom" FontFamily="Calibri" FontSize="16">
+            <Grid Width="1270">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Image x:Name="Image_StatusIcon" Source="Images/Led_Gray.png" Width="16" Height="16"/>
+                <StatusBarItem x:Name="StatusBarItem_DeviceStatus" ScrollViewer.VerticalScrollBarVisibility="Disabled" Content="Device disconnect!" Grid.Column="1" Margin="5,0"/>
+                <StatusBarItem x:Name="StatusBarItem_ErrorStatus" ScrollViewer.VerticalScrollBarVisibility="Auto" Foreground="Red" Grid.Column="2"/>
+                <Button x:Name="Button_ClearAllErrors" Content="Clear All Errors" Click="Button_ClearAllErrors_Click" Grid.Column="3" Margin="5,0"/>
+            </Grid>
+        </StatusBar>
+        <Grid x:Name="Grid_MainWin" Margin="10" MinHeight="615"/>
+    </DockPanel>
+</Window>

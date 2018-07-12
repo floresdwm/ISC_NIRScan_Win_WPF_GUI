@@ -1,0 +1,52 @@
+﻿<Window x:Class="DLP_NIR_Win_SDK_App_CS.ActivationKeyWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ActivationKeyWindow" Height="300" Width="550" FontFamily="Calibri" FontSize="16" ResizeMode="NoResize">
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem x:Name="StatusBarItem_KeyStatus" Content=""/>
+        </StatusBar>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Label Content="S/N" Margin="5,5,0,5"/>
+            <TextBox x:Name="TextBox_SN" TextWrapping="Wrap" Margin="5,5,0,5" Grid.Column="1" VerticalContentAlignment="Center" MinWidth="80"/>
+            <Label Content="Key" Grid.Column="2" Margin="5,5,0,5"/>
+            <TextBox x:Name="TextBox_Key" Grid.Column="3" TextWrapping="Wrap" Margin="5" Grid.ColumnSpan="2" VerticalContentAlignment="Center" TextChanged="TextBox_Key_TextChanged" MaxLength="35" PreviewKeyDown="TextBox_Key_PreviewKeyDown"/>
+            <ListView x:Name="ListView_Data" Grid.Row="1" Grid.ColumnSpan="4" Margin="5,0,0,5" Grid.RowSpan="5">
+                <ListView.Resources>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Center" />
+                    </Style>
+                </ListView.Resources>
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="S/N" Width="100" DisplayMemberBinding="{Binding SerNum}"/>
+                        <GridViewColumn Header="Key Pairs" Width="320" DisplayMemberBinding="{Binding Key}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+            <Button x:Name="Button_Add" Content="Add" Grid.Column="4" Margin="5,0,5,5" Grid.Row="1" Click="Button_Add_Click"/>
+            <Button x:Name="Button_Delete" Content="Delete" Grid.Row="2" Grid.Column="4" Margin="5,0,5,5" Click="Button_Delete_Click"/>
+            <Button x:Name="Button_Apply" Content="Apply Key" Grid.Row="3" Grid.Column="4" Margin="5,0,5,5" Click="Button_Apply_Click"/>
+            <Button x:Name="Button_GetSerNum" Content="Get S/N" Grid.Column="4" Grid.Row="5" Margin="5,0,5,5" Click="Button_GetSerNum_Click"/>
+        </Grid>
+    </DockPanel>
+</Window>
