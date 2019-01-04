@@ -1,6 +1,6 @@
 # ISC_NIRScan_Win_WPF_GUI
 
-
+# v2.1.0.53 change log
 
 # License - InnoSpectra Corp.
 
