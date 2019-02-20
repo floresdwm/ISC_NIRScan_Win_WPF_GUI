@@ -1,17 +1,12 @@
 # ISC_NIRScan_Win_WPF_GUI
 
-# v2.1.1 Change Logs
+# Requirement
 
-1. Reduce c# language version to 7.0.
-2. Update ISC libraries.
-3. Add device button scan control.
-4. Add a dialog to control usb connection checking if the device was being connected by BLE.
-5. Add a menu item to clear activation key.
-6. Add save one csv file for continue scan.
-7. Optimised Tiva FW update with Tiva DFU checking. Remove "Tiva is empty" checking item.
-8. Support HW ver.B with advanced functions.
-9. Fixed UI crashed that scan config is abnormal.
-10. Minor bugs fixed.
+1. C# Language Version: v7.0
+
+2. Microsoft .NET Framework: v4.6.1
+
+3. Microsoft Visual C++ Resdistributable (x86/x64): 2010 or 2017
 
 # License - InnoSpectra Corp.
 
