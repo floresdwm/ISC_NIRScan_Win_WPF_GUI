@@ -29,7 +29,7 @@
             <Label Content="S/N" Margin="5,5,0,5"/>
             <TextBox x:Name="TextBox_SN" TextWrapping="Wrap" Margin="5,5,0,5" Grid.Column="1" VerticalContentAlignment="Center" MinWidth="80"/>
             <Label Content="Key" Grid.Column="2" Margin="5,5,0,5"/>
-            <TextBox x:Name="TextBox_Key" Grid.Column="3" TextWrapping="Wrap" Margin="5" Grid.ColumnSpan="2" VerticalContentAlignment="Center" TextChanged="TextBox_Key_TextChanged" MaxLength="35" PreviewKeyDown="TextBox_Key_PreviewKeyDown"/>
+            <TextBox x:Name="TextBox_Key" Grid.Column="3" TextWrapping="Wrap" Margin="5" Grid.ColumnSpan="2" VerticalContentAlignment="Center" TextChanged="TextBox_Key_TextChanged" MaxLength="35"/>
             <ListView x:Name="ListView_Data" Grid.Row="1" Grid.ColumnSpan="4" Margin="5,0,0,5" Grid.RowSpan="5">
                 <ListView.Resources>
                     <Style TargetType="ListViewItem">

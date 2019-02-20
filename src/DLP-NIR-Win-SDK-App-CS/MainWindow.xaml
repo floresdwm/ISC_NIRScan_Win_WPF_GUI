@@ -15,13 +15,14 @@
                 <MenuItem x:Name="MenuItem_ResetSys" Header="Reset System" Click="MenuItem_ResetSys_Click"/>
                 <MenuItem x:Name="MenuItem_UpdateRef" Header="Update Reference Data" Click="MenuItem_UpdateRef_Click"/>
                 <MenuItem x:Name="MenuItem_SelectDevice" Header="Select Device"/>
-                <Separator x:Name="Separator_Advance"/>
+                <Separator x:Name="Separator_Advance" Margin="0"/>
                 <MenuItem x:Name="MenuItem_Advance" Header="Advance">
                     <MenuItem x:Name="MenuItem_BackupFacRef" Header="Backup Factory Reference" Click="MenuItem_BackupFacRef_Click"/>
                     <MenuItem x:Name="MenuItem_RestoreFacRef" Header="Restore Factory Reference" Click="MenuItem_RestoreFacRef_Click"/>
                 </MenuItem>
-                <Separator x:Name="Separator_ActKeyMGMT"/>
+                <Separator x:Name="Separator_ActKeyMGMT" Margin="0"/>
                 <MenuItem x:Name="MenuItem_ActKeyMGMT" Header="Activation Key Management" Click="MenuItem_ActKeyMGMT_Click"/>
+                <MenuItem x:Name="MenuItem_ClearActKey" Header="Clear Device Activation Key" Click="MenuItem_ClearActKey_Click"/>
             </MenuItem>
             <MenuItem x:Name="MenuItem_Help" Header="Help" FontSize="16" FontFamily="Calibri">
                 <MenuItem x:Name="MenuItem_License" Header="License Argeement" Click="MenuItem_License_Click"/>

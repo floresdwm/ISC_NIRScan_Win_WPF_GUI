@@ -67,6 +67,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             InitializeComponent();
 
             String version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            version = version.Substring(0, version.LastIndexOf('.'));
             this.Title = "ISC NIRScan v" + version;
 
             // Setup the MainWindow Position to center desktop screen
@@ -105,12 +106,13 @@ namespace DLP_NIR_Win_SDK_App_CS
                     if (Device.IsConnected())
                         HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
 
-                    if (HWRev == "D")
+                    if ((IsOldTivaFW() && HWRev == "D") || (!IsOldTivaFW() && HWRev != "A" && HWRev != String.Empty))
                     {
                         Separator_Advance.Visibility = Visibility.Visible;
                         MenuItem_Advance.Visibility = Visibility.Visible;
                         Separator_ActKeyMGMT.Visibility = Visibility.Visible;
                         MenuItem_ActKeyMGMT.Visibility = Visibility.Visible;
+                        MenuItem_ClearActKey.Visibility = Visibility.Visible;
                     }
                     else
                     {
@@ -118,6 +120,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                         MenuItem_Advance.Visibility = Visibility.Collapsed;
                         Separator_ActKeyMGMT.Visibility = Visibility.Collapsed;
                         MenuItem_ActKeyMGMT.Visibility = Visibility.Collapsed;
+                        MenuItem_ClearActKey.Visibility = Visibility.Collapsed;
                     }
 
                     if (state == (int)GUI_State.DEVICE_ON)
@@ -130,6 +133,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                     MenuItem_UpdateRef.IsEnabled = isEnable;
                     MenuItem_Advance.IsEnabled = isEnable;
                     MenuItem_ActKeyMGMT.IsEnabled = isEnable;
+                    MenuItem_ClearActKey.IsEnabled = isEnable;
                     Button_ClearAllErrors.IsEnabled = isEnable;
                     break;
                 }
@@ -237,15 +241,17 @@ namespace DLP_NIR_Win_SDK_App_CS
             ProgressWindowCompleted();
 
             if (SerialNumber == null)
+            {
                 DBG.WriteLine("Device connecting failed !");
+            }
             else
             {
                 DBG.WriteLine("Device <{0}> connected successfullly !", SerialNumber);
 
                 String HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
-                if ((HWRev == "D" && Device.ChkBleExist() == 1) || HWRev == "B" || HWRev == String.Empty)
+                if (Device.ChkBleExist() == 1)
                     Device.SetBluetooth(false);
-                if (HWRev == "D")
+                if ((IsOldTivaFW() && HWRev == "D") || (!IsOldTivaFW() && HWRev != "A" && HWRev != String.Empty))
                     CheckFactoryRefData();
 
                 Device.DeviceDateTime DevDateTime = new Device.DeviceDateTime();
@@ -263,20 +269,20 @@ namespace DLP_NIR_Win_SDK_App_CS
                 Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(() => {
                     MainWindow_GUI_Handler((int)GUI_State.DEVICE_ON);
                     StatusIcon(1);
-                    RefreshErrorStatus();
+                    Device.ReadErrorStatusAndCode();
 
-                    if (HWRev == "D")
+                    if ((IsOldTivaFW() && HWRev == "D") || (!IsOldTivaFW() && HWRev != "A" && HWRev != String.Empty))
                     {
                         ActivationKeyWindow window = new ActivationKeyWindow();
                         if (window.IsActivated)
                         {
-                            StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected and activated!";
+                            StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected!";
                             SendScanGUIEvent = (int)GUI_State.KEY_ACTIVATE;
                             SendUtilityGUIEvent = (int)GUI_State.KEY_ACTIVATE;
                         }
                         else
                         {
-                            StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected but not activated!";
+                            StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected but advanced functions locked!";
                             SendScanGUIEvent = (int)GUI_State.KEY_NOT_ACTIVATE;
                             SendUtilityGUIEvent = (int)GUI_State.KEY_NOT_ACTIVATE;
                         }
@@ -303,11 +309,50 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (error)
             {
                 DBG.WriteLine("Device disconnected abnormally !");
-                SDK.AutoSearch = true;
-                ShowWarning("Device was disconnected !");
+                if(SDK.IsUsbConnectionBusy)  // USB connection busy from other devices.
+                {
+                    MessageBoxResult input = ShowQuestion("Device is busy connected from others.\n" +
+                                                          "If you want to connect automatically when the device is available, please press \"YES\"!\n" +
+                                                          "If you want to connect manually, please press \"NO\"!\n" +
+                                                          "If you want to quit the system, please press \"CANCEL\"!", MessageBoxButton.YesNoCancel);
+                    if (input == MessageBoxResult.Yes)
+                    {
+                        SDK.AutoSearch = true;
+                    }
+                    else if (input == MessageBoxResult.No)
+                    {
+                        SDK.AutoSearch = false;
+                        ShowInfo("The system will not connect to the device automatically, you have to operate manually!");
+                    }
+                    else
+                    {
+                        Environment.Exit(0);
+                    }
+                }
+                else
+                {
+                    SDK.AutoSearch = true;
+                    ShowWarning("Device was disconnected !");
+                }
             }
             else
+            {
                 DBG.WriteLine("Device disconnected successfully !");
+            }
+        }
+
+        private void Device_Found_Handler()
+        {
+            SDK.AutoSearch = false;
+            Dispatcher.Invoke((Action)delegate ()
+            {
+                Enumerate_Devices(null, null);
+            });
+        }
+
+        private void Device_Error_Handler(string error)
+        {
+            ShowWarning(error);
         }
 
         #endregion
@@ -329,8 +374,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (!Device.IsConnected())
                 return;
 
-            String UUID = BitConverter.ToString(Device.DevInfo.DeviceUUID).Replace("-", ":");
-            String HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
+            String GUIRev = Assembly.GetExecutingAssembly().GetName().Version.ToString();
             String TivaRev = Device.DevInfo.TivaRev[0].ToString() + "."
                            + Device.DevInfo.TivaRev[1].ToString() + "."
                            + Device.DevInfo.TivaRev[2].ToString() + "."
@@ -342,22 +386,17 @@ namespace DLP_NIR_Win_SDK_App_CS
                               + Device.DevInfo.SpecLibRev[1].ToString() + "."
                               + Device.DevInfo.SpecLibRev[2].ToString() + "."
                               + Device.DevInfo.SpecLibRev[3].ToString();
-            String GUIRev = Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            String Detector_Board_HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(2, 1) : String.Empty;
-            String Lamp_Usage = "";
-            if (Device.ReadLampUsage() == 0)
-            {
-                Lamp_Usage = GetLampUsage();
-            }
-            else
-                Lamp_Usage = "NA";
+            String MB_HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
+            String DB_HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(2, 1) : String.Empty;
+            String UUID = BitConverter.ToString(Device.DevInfo.DeviceUUID).Replace("-", ":");
+            String Lamp_Usage = (Device.ReadLampUsage() == SDK.PASS) ? GetLampUsage() : "NA";
           
             String str = "GUI Version" + "\t\t\t" + GUIRev + "\n"
                        + "Tiva SW Version" + "\t\t\t" + TivaRev + "\n"
                        + "DLPC Flash Version" + "\t\t\t" + DLPCRev + "\n"
                        + "Spectrum Library Version" + "\t\t" + SpecLibRev + "\n"
-                       + "Main Board Version" + "\t\t\t" + HWRev + "\n"
-                       + "Detector Board Version" + "\t\t" + Detector_Board_HWRev + "\n"
+                       + "Main Board Version" + "\t\t\t" + MB_HWRev + "\n"
+                       + "Detector Board Version" + "\t\t" + DB_HWRev + "\n"
                        + "Model Name" + "\t\t\t" + Device.DevInfo.ModelName + "\n"
                        + "Device Serial Number" + "\t\t" + Device.DevInfo.SerialNumber + "\n"
                        + "Manufacturing Serial Number" + "\t\t" + Device.DevInfo.Manufacturing_SerialNumber + "\n"
@@ -404,11 +443,12 @@ namespace DLP_NIR_Win_SDK_App_CS
                 WorkerSupportsCancellation = true
             };
             bwTivaReset.DoWork += new DoWorkEventHandler(bwTivaReset_DoWork);
-            // bwTivaReset.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bwTivaReset_DoWorkCompleted);
+            bwTivaReset.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bwTivaReset_DoWorkCompleted);
 
             MessageBoxResult input = ShowQuestion("Are you sure to RESET system?", MessageBoxButton.OKCancel);
             if (input == MessageBoxResult.OK)
             {
+                SDK.IsConnectionChecking = false;
                 SendScanGUIEvent = (int)GUI_State.DEVICE_OFF_SCANTAB_SELECT;
                 bwTivaReset.RunWorkerAsync();
             }
@@ -417,9 +457,12 @@ namespace DLP_NIR_Win_SDK_App_CS
         private BackgroundWorker bwTivaReset;
         private static void bwTivaReset_DoWork(object sender, DoWorkEventArgs e)
         {
-            Device.ResetTiva(false);
+            int ret = Device.ResetTiva(false);
         }
-        // private static void bwTivaReset_DoWorkCompleted(object sender, RunWorkerCompletedEventArgs e) { }
+        private static void bwTivaReset_DoWorkCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            SDK.IsConnectionChecking = true;
+        }
         
         #endregion
 
@@ -670,8 +713,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                     StatusIcon(0);
                     StatusBarItem_DeviceStatus.Content = "Device disconnect!";
 
-                    String HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
-                    if ((HWRev == "D" && Device.ChkBleExist() == 1) || HWRev == "B" || HWRev == String.Empty)
+                    if (Device.ChkBleExist() == 1)
                         Device.SetBluetooth(true);
 
                     SDK.IsEnableNotify = false;  // Disable GUI notify
@@ -778,15 +820,40 @@ namespace DLP_NIR_Win_SDK_App_CS
 
             if (window.IsActivated)
             {
-                StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected and activated!";
+                StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected!";
                 SendScanGUIEvent = (int)GUI_State.KEY_ACTIVATE;
                 SendUtilityGUIEvent = (int)GUI_State.KEY_ACTIVATE;
             }
             else
             {
-                StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected but not activated!";
+                StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected but advanced functions locked!";
                 SendScanGUIEvent = (int)GUI_State.KEY_NOT_ACTIVATE;
                 SendUtilityGUIEvent = (int)GUI_State.KEY_NOT_ACTIVATE;
+            }
+        }
+
+        private void MenuItem_ClearActKey_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBoxResult input = ShowQuestion("Are you sure to CLEAR Activation Key?", MessageBoxButton.OKCancel);
+
+            if (input == MessageBoxResult.OK)
+            {
+                Byte[] ByteKey = new Byte[12];
+                Device.SetActivationKey(ByteKey);
+
+                ActivationKeyWindow window = new ActivationKeyWindow { Owner = this };
+                if (window.IsActivated)
+                {
+                    StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected!";
+                    SendScanGUIEvent = (int)GUI_State.KEY_ACTIVATE;
+                    SendUtilityGUIEvent = (int)GUI_State.KEY_ACTIVATE;
+                }
+                else
+                {
+                    StatusBarItem_DeviceStatus.Content = "Device " + Device.DevInfo.ModelName + " (" + Device.DevInfo.SerialNumber + ") connected but advanced functions locked!";
+                    SendScanGUIEvent = (int)GUI_State.KEY_NOT_ACTIVATE;
+                    SendUtilityGUIEvent = (int)GUI_State.KEY_NOT_ACTIVATE;
+                }
             }
         }
 
@@ -825,9 +892,12 @@ namespace DLP_NIR_Win_SDK_App_CS
         private void RefreshErrorStatus()
         {
             String ErrMsg = String.Empty;
-
-            if (Device.ReadErrorStatusAndCode() != 0)
-                return;
+            
+            if (SDK.IsConnectionChecking == false)
+            {
+                if (Device.ReadErrorStatusAndCode() != 0)
+                    return;
+            }
 
             if ((Device.ErrStatus & 0x00000001) == 0x00000001)  // Scan Error
             {
@@ -966,20 +1036,6 @@ namespace DLP_NIR_Win_SDK_App_CS
                 RefreshErrorStatus();
         }
 
-        private void Device_Found_Handler()
-        {
-            SDK.AutoSearch = false;
-            Dispatcher.Invoke((Action)delegate ()
-            {
-                Enumerate_Devices(null, null);
-            });
-        }
-
-        private void Device_Error_Handler(string error)
-        {
-            ShowWarning(error);
-        }
-
         #endregion
 
         #region Progress Window
@@ -1063,5 +1119,24 @@ namespace DLP_NIR_Win_SDK_App_CS
         }
 
         #endregion
+
+        public static Boolean IsOldTivaFW()
+        {
+            int lastVer, curVer;
+            Byte[] latetestVerCode = { Convert.ToByte(2), Convert.ToByte(1), Convert.ToByte(0), Convert.ToByte(59) };
+
+            if (Device.IsConnected())
+            {
+                lastVer = BitConverter.ToInt32(latetestVerCode, 0);
+                curVer = BitConverter.ToInt32(Device.DevInfo.TivaRev, 0);
+
+                if (curVer < lastVer)
+                    return true;
+                else
+                    return false;
+            }
+            else
+                return true;
+        }
     }
 }

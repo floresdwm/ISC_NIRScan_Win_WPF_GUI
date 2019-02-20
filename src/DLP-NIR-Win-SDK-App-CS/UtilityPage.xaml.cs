@@ -14,6 +14,7 @@ using System.Windows.Controls;
 using System.Xml;
 using Microsoft.Win32;
 using DLP_NIR_Win_SDK_CS;
+using System.Timers;
 
 namespace DLP_NIR_Win_SDK_App_CS
 {
@@ -77,6 +78,23 @@ namespace DLP_NIR_Win_SDK_App_CS
                         Button_CalWriteGenCoeffs.IsEnabled = false;
                         Button_CalRestoreDefaultCoeffs.IsEnabled = false;
                     }
+
+                    if (state == (int)MainWindow.GUI_State.DEVICE_ON)
+                    {
+                        int lastVer, curVer;
+                        Byte[] latetestVerCode = { Convert.ToByte(2), Convert.ToByte(1), Convert.ToByte(0), Convert.ToByte(69) };
+
+                        lastVer = BitConverter.ToInt32(latetestVerCode, 0);
+                        curVer = BitConverter.ToInt32(Device.DevInfo.TivaRev, 0);
+
+                        if (curVer < lastVer)
+                            Button_CalRestoreDefaultCoeffs.Visibility = Visibility.Collapsed;
+                        else
+                            Button_CalRestoreDefaultCoeffs.Visibility = Visibility.Visible;
+                    }
+                    else
+                        Button_CalRestoreDefaultCoeffs.Visibility = Visibility.Collapsed;
+
                     break;
                 }
                 case (int)MainWindow.GUI_State.FW_UPDATE:
@@ -111,16 +129,26 @@ namespace DLP_NIR_Win_SDK_App_CS
                             Module = Device.DevInfo.ModelName.Substring(Device.DevInfo.ModelName.Length - 2, 1);
                     }
 
-                    if (HWRev == "D")
+                    if ((MainWindow.IsOldTivaFW() && HWRev == "D") || (!MainWindow.IsOldTivaFW() && HWRev != "A" && HWRev != String.Empty))
                     {
-                        if (state == (int)MainWindow.GUI_State.KEY_ACTIVATE)
-                        {
-                            if (Module == "F")
-                                GroupBox_LampUsage.Visibility = Visibility.Collapsed;
-                            else
-                                GroupBox_LampUsage.Visibility = Visibility.Visible;
+                        if (Module == "F")
+                            GroupBox_LampUsage.Visibility = Visibility.Collapsed;
+                        else
+                            GroupBox_LampUsage.Visibility = Visibility.Visible;
+
+                        int lastVer, curVer;
+                        Byte[] latetestVerCode = { Convert.ToByte(2), Convert.ToByte(1), Convert.ToByte(0), Convert.ToByte(69) };
+
+                        lastVer = BitConverter.ToInt32(latetestVerCode, 0);
+                        curVer = BitConverter.ToInt32(Device.DevInfo.TivaRev, 0);
+
+                        if (curVer < lastVer)
+                            Button_CalRestoreDefaultCoeffs.Visibility = Visibility.Collapsed;
+                        else
                             Button_CalRestoreDefaultCoeffs.Visibility = Visibility.Visible;
 
+                        if (state == (int)MainWindow.GUI_State.KEY_ACTIVATE)
+                        {
                             GroupBox_LampUsage.IsEnabled = true;
                             if (CheckBox_CalWriteEnable.IsChecked == true)
                                 Button_CalRestoreDefaultCoeffs.IsEnabled = true;
@@ -129,12 +157,6 @@ namespace DLP_NIR_Win_SDK_App_CS
                         }
                         else
                         {
-                            if (Module == "F")
-                                GroupBox_LampUsage.Visibility = Visibility.Collapsed;
-                            else
-                                GroupBox_LampUsage.Visibility = Visibility.Visible;
-                            Button_CalRestoreDefaultCoeffs.Visibility = Visibility.Visible;
-
                             GroupBox_LampUsage.IsEnabled = false;
                             Button_CalRestoreDefaultCoeffs.IsEnabled = false;
                         }
@@ -228,7 +250,6 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (SerialNumber == null) return;
 
             Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(() => {
-                CheckBox_TivaFlashEmpty.IsChecked = false;
                 CheckBox_CalWriteEnable.IsChecked = false;
 
                 UtilityPage_GUI_Handler((int)MainWindow.GUI_State.DEVICE_ON);
@@ -288,7 +309,9 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (Device.SetModelName(Helper.CheckRegex(TextBox_ModelName.Text)) == 0)
             {
                 if (Device.Information() != 0)
+                {
                     DBG.WriteLine("Device Information read failed!");
+                }
                 else
                 {
                     ActivationKeyWindow window = new ActivationKeyWindow();
@@ -327,7 +350,9 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (Device.SetSerialNumber(Helper.CheckRegex(TextBox_SerialNumber.Text)) == 0)
             {
                 if (Device.Information() != 0)
+                {
                     DBG.WriteLine("Device Information read failed!");
+                }
                 else if (OldSerNum != Device.DevInfo.SerialNumber)
                 {
                     ActivationKeyWindow window = new ActivationKeyWindow();
@@ -578,46 +603,99 @@ namespace DLP_NIR_Win_SDK_App_CS
         {
             SDK.AutoSearch = false;
             SDK.IsEnableNotify = false;
-
-            UtilityPage_GUI_Handler((int)MainWindow.GUI_State.FW_UPDATE);
-            SendMainGUIEvent = (int)MainWindow.GUI_State.FW_UPDATE;
+            SDK.IsConnectionChecking = false;
 
             String filePath = (String)TextBox_TivaFWPath.Text;
 
-            if ((Device.IsConnected() || CheckBox_TivaFlashEmpty.IsChecked == true) && filePath != "")
+            if (Device.IsConnected() && filePath != "")
             {
-                SDK.AutoSearch = false;
-                SDK.IsEnableNotify = false;
-                if (CheckBox_TivaFlashEmpty.IsChecked != true)
-                    Device.Set_Tiva_To_Bootloader();
+                int Ret = SDK.PASS;
+                int retry = 0;
+
+                UtilityPage_GUI_Handler((int)MainWindow.GUI_State.FW_UPDATE);
+                SendMainGUIEvent = (int)MainWindow.GUI_State.FW_UPDATE;
 
                 ProgressBar_TivaFWUpdateStatus.Value = 10;
+                Device.Set_Tiva_To_Bootloader();
 
+                while (!Device.IsDFUConnected())
+                {
+                    if (++retry > 50)
+                    {
+                        Ret = SDK.FAIL;
+                        break;
+                    }
+                    Thread.Sleep(100);
+                }
+
+                if (Ret == SDK.PASS)
+                { 
+                    List<object> arguments = new List<object> { filePath };
+                    bwTivaUpdate.RunWorkerAsync(arguments);
+                }
+                else
+                {
+                    SDK.AutoSearch = true;
+                    SDK.IsEnableNotify = true;
+                    MessageBox.Show("Can not find \"Tiva DFU\"!", "Error", MessageBoxButton.OK, MessageBoxImage.Stop);
+                    UtilityPage_GUI_Handler((int)MainWindow.GUI_State.DEVICE_OFF);
+                    SendMainGUIEvent = (int)MainWindow.GUI_State.DEVICE_OFF;
+                    SDK.IsConnectionChecking = true;
+                    ProgressBar_TivaFWUpdateStatus.Value = 0;
+                }
+
+            }
+            else if (Device.IsDFUConnected())
+            {
                 List<object> arguments = new List<object> { filePath };
                 bwTivaUpdate.RunWorkerAsync(arguments);
             }
             else
+            {
+                SDK.AutoSearch = true;
+                SDK.IsEnableNotify = true;
                 MessageBox.Show("Device dose not exist or image file path error!", "Error", MessageBoxButton.OK, MessageBoxImage.Stop);
+                UtilityPage_GUI_Handler((int)MainWindow.GUI_State.DEVICE_OFF);
+                SendMainGUIEvent = (int)MainWindow.GUI_State.DEVICE_OFF;
+                SDK.IsConnectionChecking = true;
+                ProgressBar_TivaFWUpdateStatus.Value = 0;
+            }
         }
 
         private void bwTivaUpdate_DoWork(object sender, DoWorkEventArgs e)
         {
-            Thread.Sleep(100); // Wait for DFU device appeared
             List<object> arguments = e.Argument as List<object>;
             String filePath = (String)arguments[0];
             bwTivaUpdate.ReportProgress(30);
 
+            pValue = 30;
+            System.Timers.Timer pTimer = new System.Timers.Timer(150);
+            pTimer.Elapsed += OnTimedEvent;
+            pTimer.AutoReset = true;
+            pTimer.Enabled = true;
+            
             int ret = Device.Tiva_FW_Update(filePath);
             if (ret == 0)
                 e.Result = 0;
             else
                 e.Result = ret;
+
+            pTimer.Enabled = false;
+        }
+
+        private int pValue = 30;
+        private void OnTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            if (pValue < 99)
+            {
+                pValue += 1;
+                bwTivaUpdate.ReportProgress(pValue);
+            }
         }
 
         private void bwTivaUpdate_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             int percentage = e.ProgressPercentage;
-            Thread.Sleep(2000);
             ProgressBar_TivaFWUpdateStatus.Value = percentage;
         }
 
@@ -672,6 +750,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             }
             SDK.AutoSearch = true;
             SDK.IsEnableNotify = true;
+            SDK.IsConnectionChecking = true;
             ProgressBar_TivaFWUpdateStatus.Value = 0;
         }
 
@@ -769,9 +848,13 @@ namespace DLP_NIR_Win_SDK_App_CS
             chksum = Device.DLPC_Get_Checksum();
 
             if (chksum < 0)
+            {
                 DBG.WriteLine("Error Reading DLPC150 Flash Checksum! (error: {0})", chksum);
+            }
             else if (chksum != expectedChecksum)
+            {
                 DBG.WriteLine("Checksum mismatched: (Expected: {0}, DLPC Flash: {1})", expectedChecksum, chksum);
+            }
             else
             {
                 DBG.WriteLine("DLPC150 updated successfully!");

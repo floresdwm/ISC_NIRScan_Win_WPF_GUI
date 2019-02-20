@@ -33,8 +33,6 @@ namespace DLP_NIR_Win_SDK_App_CS
 
     public partial class ActivationKeyWindow : Window
     {
-        private Boolean KeyBack = false;
-
         public ActivationKeyWindow()
         {
             InitializeComponent();
@@ -58,13 +56,6 @@ namespace DLP_NIR_Win_SDK_App_CS
             TextBox_SN.Focus();
         }
 
-        private void TextBox_Key_PreviewKeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-        {
-            if (e.Key == System.Windows.Input.Key.Back)
-                KeyBack = true;
-            else
-                KeyBack = false;
-        }
         //用來比較textkey是否有處理
         String tmpkey = "";
         private void TextBox_Key_TextChanged(object sender, TextChangedEventArgs e)

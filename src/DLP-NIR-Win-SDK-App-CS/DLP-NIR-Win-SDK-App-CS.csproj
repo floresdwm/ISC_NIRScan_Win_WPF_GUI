@@ -7,7 +7,7 @@
     <ProjectGuid>{A2427853-D717-466E-B458-71A8742A1584}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <RootNamespace>DLP_NIR_Win_SDK_App_CS</RootNamespace>
-    <AssemblyName>ISC-NIRScan-GUI-VS-WPF</AssemblyName>
+    <AssemblyName>ISC-NIRScan-GUI</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -28,8 +28,8 @@
     <ProductName>ISC NIRScan</ProductName>
     <PublisherName>ISC NIRScan</PublisherName>
     <SuiteName>ISC NIRScan</SuiteName>
-    <ApplicationRevision>52</ApplicationRevision>
-    <ApplicationVersion>2.1.0.52</ApplicationVersion>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>2.1.1.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -39,12 +39,12 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Debug\x86\</OutputPath>
+    <OutputPath>..\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -54,7 +54,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>7</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
@@ -81,7 +81,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>7</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -93,7 +93,7 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>7</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
@@ -101,7 +101,7 @@
     </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="isccs, Version=2.1.0.52, Culture=neutral, processorArchitecture=x86">
+    <Reference Include="isccs, Version=2.1.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>ISC-NIRScan-Library\isccs.dll</HintPath>
     </Reference>
@@ -260,21 +260,37 @@
     <Resource Include="ISC_Logo.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ISC-NIRScan-Library\hidapi.dll" />
-    <Resource Include="ISC-NIRScan-Library\isccpp.dll" />
-    <Resource Include="ISC-NIRScan-Library\isccs.dll" />
-    <Resource Include="ISC-NIRScan-Library\libdlpspec.dll" />
-    <Resource Include="ISC-NIRScan-Library\lmdfu.dll" />
-    <Resource Include="ISC-NIRScan-Library\lmusbdll.dll" />
-    <Resource Include="ISC-NIRScan-Library\msvcp140.dll" />
-    <Resource Include="ISC-NIRScan-Library\vcruntime140.dll" />
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\hidapi.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>hidapi.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\isccpp.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>isccpp.dll</TargetPath>
+    </ContentWithTargetPath>
+    <None Include="ISC-NIRScan-Library\isccs.dll">
+      <TargetPath>isccs.dll</TargetPath>
+    </None>
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\libdlpspec.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>libdlpspec.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\lmdfu.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>lmdfu.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\lmusbdll.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>lmusbdll.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\msvcp140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>msvcp140.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="ISC-NIRScan-Library\vcruntime140.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>vcruntime140.dll</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-      copy $(ProjectDir)ISC-NIRScan-Library\hidapi.dll $(TargetDir)
-      copy $(ProjectDir)ISC-NIRScan-Library\isccpp.dll $(TargetDir)
-      copy $(ProjectDir)ISC-NIRScan-Library\libdlpspec.dll $(TargetDir)
-    </PostBuildEvent>
-  </PropertyGroup>
 </Project>

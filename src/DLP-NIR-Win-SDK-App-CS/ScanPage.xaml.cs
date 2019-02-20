@@ -123,13 +123,13 @@ namespace DLP_NIR_Win_SDK_App_CS
 
         private String Scan_Dir = String.Empty;
         private String Display_Dir = String.Empty;
+        private String OneScanFileName = String.Empty;
         private Int32 ScanFile_Formats = 0;
 
         // For Configuration
         private const Int32 MIN_WAVELENGTH = 900;
         private const Int32 MAX_WAVELENGTH = 1700;
         private const Int32 MAX_CFG_SECTION = 5;
-        private bool IsOldTivaFW = false;
 
         private List<ScanConfig.SlewScanConfig> LocalConfig = new List<ScanConfig.SlewScanConfig>();
         private List<ComboBox> ComboBox_CfgScanType = new List<ComboBox>();
@@ -172,6 +172,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             Dispatcher.ShutdownStarted += new EventHandler(ScanPage_Shutdown);
             SDK.OnDeviceConnected += new Action<string>(Device_Connected_Handler);
             SDK.OnDeviceConnectionLost += new Action<bool>(Device_Disconncted_Handler);
+            SDK.OnButtonScan += new Action(StartButtonScan);
             MainWindow.OnScanGUIControl += new Action<int>(ScanPage_GUI_Handler);
             scan_Params = new ConfigurationData();
             this.DataContext = scan_Params;
@@ -277,7 +278,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                     if (Device.IsConnected())
                         HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
 
-                    if (HWRev == "D")
+                    if ((MainWindow.IsOldTivaFW() && HWRev == "D") || (!MainWindow.IsOldTivaFW() && HWRev != "A" && HWRev != String.Empty))
                     {
                         if (state == (int)MainWindow.GUI_State.KEY_ACTIVATE)
                         {
@@ -461,17 +462,6 @@ namespace DLP_NIR_Win_SDK_App_CS
             XmlDoc.Save(FilePath);
         }
 
-        private void tivaVerChk()
-        {
-            int lastVer, curVer;
-            Byte[] latetestVerCode = { Convert.ToByte(2), Convert.ToByte(1), Convert.ToByte(0), Convert.ToByte(42) };
-            lastVer = BitConverter.ToInt32(latetestVerCode, 0);
-            curVer = BitConverter.ToInt32(Device.DevInfo.TivaRev, 0);
-
-            if (curVer < lastVer)
-                IsOldTivaFW = true;
-        }
-
         private void Device_Connected_Handler(String SerialNumber)
         {
             if (SerialNumber == null) return;
@@ -513,6 +503,14 @@ namespace DLP_NIR_Win_SDK_App_CS
                 ScanPage_GUI_Handler((int)MainWindow.GUI_State.DEVICE_OFF_SCANTAB_SELECT);
                 ScanPage_GUI_Handler((int)MainWindow.GUI_State.DEVICE_OFF);
                 ScanPage_GUI_Handler((int)MainWindow.GUI_State.KEY_NOT_ACTIVATE);
+            }));
+        }
+
+        private void StartButtonScan()
+        {
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Send, new Action(() => {
+                RadioButton_RefFac.IsChecked = true;
+                Button_Scan_Click(null, null);
             }));
         }
 
@@ -593,6 +591,8 @@ namespace DLP_NIR_Win_SDK_App_CS
         {
             if (Device.IsConnected())
             {
+                if (sender != null)
+                    SDK.IsConnectionChecking = false;
                 ScanPage_GUI_Handler((int)MainWindow.GUI_State.SCAN);
                 SendMainGUIEvent = (int)MainWindow.GUI_State.SCAN;
 
@@ -601,10 +601,9 @@ namespace DLP_NIR_Win_SDK_App_CS
 
                 Scan.SetScanNumRepeats(scan_Params.ScanAvg);
 
-                tivaVerChk();
                 if (CheckBox_AutoGain.IsChecked == false)
                 {
-                    if (IsOldTivaFW && CheckBox_LampOn.IsChecked == true)
+                    if (MainWindow.IsOldTivaFW() && CheckBox_LampOn.IsChecked == true)
                     {
                         Scan.SetPGAGain(scan_Params.PGAGain);
                     }
@@ -613,10 +612,9 @@ namespace DLP_NIR_Win_SDK_App_CS
                         Scan.SetFixedPGAGain(true, scan_Params.PGAGain);
                     }                       
                 }
-                    
                 else
                 {                    
-                    if (IsOldTivaFW)
+                    if (MainWindow.IsOldTivaFW())
                         Scan.SetFixedPGAGain(false, scan_Params.PGAGain);
                     else
                         Scan.SetFixedPGAGain(true, 0); // This is set to auto PGA
@@ -694,10 +692,10 @@ namespace DLP_NIR_Win_SDK_App_CS
 
                 if (GlobalData.UserCancelRepeatedScan == false && scan_Params.RepeatedScanCountDown > 0)
                 {
-                    tivaVerChk();
+                    /* This should be ignored since the PGA was set at scan click
                     if (CheckBox_AutoGain.IsChecked == false)
                     {
-                        if (IsOldTivaFW && CheckBox_LampOn.IsChecked == true)
+                        if (MainWindow.IsOldTivaFW() && CheckBox_LampOn.IsChecked == true)
                         {
                             Scan.SetPGAGain(scan_Params.PGAGain);
                         }
@@ -709,12 +707,12 @@ namespace DLP_NIR_Win_SDK_App_CS
                     else
                     {
                         
-                        if (IsOldTivaFW)
+                        if (MainWindow.IsOldTivaFW())
                             Scan.SetFixedPGAGain(false, scan_Params.PGAGain);
                         else
                             Scan.SetFixedPGAGain(true, 0); // This is set to auto PGA
                     }
-
+                    */
                     bwScan.RunWorkerAsync();
                 }
                 else
@@ -727,6 +725,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                     ScanPage_GUI_Handler((int)MainWindow.GUI_State.SCAN_FINISHED);
                     SendMainGUIEvent = (int)MainWindow.GUI_State.SCAN_FINISHED;
                     scan_Params.ScanInterval = 0;
+                    SDK.IsConnectionChecking = true;
                 }
             }
             else
@@ -735,6 +734,8 @@ namespace DLP_NIR_Win_SDK_App_CS
                 ScanPage_GUI_Handler((int)MainWindow.GUI_State.SCAN_FINISHED);
                 SendMainGUIEvent = (int)MainWindow.GUI_State.SCAN_FINISHED;
                 MainWindow.ShowError("Scan Failed!");
+                if (SDK.IsConnectionChecking == false)
+                    SDK.IsConnectionChecking = true;
             }
         }
 
@@ -978,8 +979,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (Device.IsConnected())
                 HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
 
-            tivaVerChk();
-            if(IsOldTivaFW || !akw.IsActivated || HWRev == "B" || HWRev == String.Empty)
+            if(MainWindow.IsOldTivaFW() || !akw.IsActivated || HWRev == "A" || HWRev == String.Empty)
             {
                 CheckBox_AutoGain.IsChecked = false;
                 CheckBox_AutoGain.IsEnabled = false;
@@ -1002,8 +1002,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (Device.IsConnected())
                 HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
 
-            tivaVerChk();
-            if (IsOldTivaFW || !akw.IsActivated || HWRev == "B" || HWRev == String.Empty)
+            if (MainWindow.IsOldTivaFW() || !akw.IsActivated || HWRev == "A" || HWRev == String.Empty)
             {
                 CheckBox_AutoGain.IsChecked = false;
                 CheckBox_AutoGain.IsEnabled = false;
@@ -1026,7 +1025,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (Device.IsConnected())
                 HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
 
-            if (akw.IsActivated && HWRev == "D")
+            if (akw.IsActivated && HWRev != "A" && HWRev != String.Empty)
                 TextBox_LampStableTime.IsEnabled = true;
             CheckBox_AutoGain.IsEnabled = true;
             CheckBox_AutoGain_Click(sender, e);
@@ -1072,6 +1071,20 @@ namespace DLP_NIR_Win_SDK_App_CS
                 ComboBox_PGAGain.IsEnabled = true;
         }
 
+        private void TextBox_B2BScan_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (int.TryParse(TextBox_B2BScan.Text, out int repeat) && repeat > 1)
+            {
+                CheckBox_SaveOneCSV.IsEnabled = true;
+            }
+            else
+            {
+                CheckBox_SaveOneCSV.IsEnabled = false;
+                CheckBox_SaveOneCSV.IsChecked = false;
+                OneScanFileName = String.Empty;
+            }
+        }
+
         private void CheckBox_SaveFileFormat_Click(object sender, RoutedEventArgs e)
         {
             var checkBox = sender as CheckBox;
@@ -1100,9 +1113,10 @@ namespace DLP_NIR_Win_SDK_App_CS
 
         private void Button_SaveDirChange_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog();
-
-            dlg.SelectedPath = TextBox_SaveDirPath.Text;
+            System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog
+            {
+                SelectedPath = TextBox_SaveDirPath.Text
+            };
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 Scan_Dir = dlg.SelectedPath;
@@ -1110,6 +1124,16 @@ namespace DLP_NIR_Win_SDK_App_CS
             }
         }
 
+        private void TextBox_SaveDirPath_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (!Directory.Exists(TextBox_SaveDirPath.Text))
+            {
+                MainWindow.ShowError("The directory is not exist, please check it again.");
+                TextBox_SaveDirPath.Text = Scan_Dir;
+            }
+            else
+                Scan_Dir = TextBox_SaveDirPath.Text;
+        }
         #endregion
 
         #region Scan Configuration
@@ -1235,7 +1259,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             else
                 CurConfig = LocalConfig[LocalCfg_SelIndex];
 
-            NumSection = CurConfig.head.num_sections;
+            NumSection = (CurConfig.head.num_sections <= MAX_CFG_SECTION) ? CurConfig.head.num_sections : MAX_CFG_SECTION;
 
             TextBox_CfgName.Text        = CurConfig.head.config_name;
             TextBox_CfgAvg.Text         = CurConfig.head.num_repeats.ToString();
@@ -1266,9 +1290,9 @@ namespace DLP_NIR_Win_SDK_App_CS
                     NumSections = 1;
                     TextBox_CfgNumSections.Text = "1";
                 }
-                else if (NumSections > 5)
+                else if (NumSections > MAX_CFG_SECTION)
                 {
-                    NumSections = 5;
+                    NumSections = MAX_CFG_SECTION;
                     TextBox_CfgNumSections.Text = "5";
                 }
 
@@ -2019,7 +2043,8 @@ namespace DLP_NIR_Win_SDK_App_CS
         #endregion
 
         #region Save Scanned Files
-        private void SaveHeader(in FileStream fs, out StreamWriter sw, Boolean ifJCAMP)
+
+        private void SaveHeader(FileStream fs, out StreamWriter sw, Boolean ifJCAMP)
         {
             sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
             String TmpStrScan = String.Empty, TmpStrRef = String.Empty, PreStr = String.Empty;
@@ -2149,9 +2174,8 @@ namespace DLP_NIR_Win_SDK_App_CS
             TimeSpan ts = new TimeSpan(TimeScanEnd.Ticks - TimeScanStart.Ticks);
             sw.WriteLine(PreStr + "Total Measurement Time in sec:," + ts.TotalSeconds);
         }
-        private void SaveHeader_CSV(in FileStream fs, out StreamWriter sw)
+        private void SaveHeader_CSV(StreamWriter sw)
         {
-            sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
             String ModelName = Device.DevInfo.ModelName;
             String TivaRev = Device.DevInfo.TivaRev[0].ToString() + "."
                            + Device.DevInfo.TivaRev[1].ToString() + "."
@@ -2164,8 +2188,8 @@ namespace DLP_NIR_Win_SDK_App_CS
                            + Device.DevInfo.SpecLibRev[1].ToString() + "."
                            + Device.DevInfo.SpecLibRev[2].ToString();
             String UUID = BitConverter.ToString(Device.DevInfo.DeviceUUID).Replace("-", ":");
-            String HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
-            String Detector_Board_HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(2, 1) : String.Empty;
+            String MB_HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
+            String DB_HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(2, 1) : String.Empty;
             String Manufacturing_SerNum = Device.DevInfo.Manufacturing_SerialNumber;
             //--------------------------------------------------------
             String Data_Date_Time = String.Empty, Ref_Config_Name = String.Empty, Ref_Data_Date_Time = String.Empty;
@@ -2228,7 +2252,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                     {
                         if (Scan.ReferenceScanConfigData.head.config_name == "SystemTest")
                         {
-                            Ref_Config_Name = "Built -in Factory Reference,";
+                            Ref_Config_Name = "Built-in Factory Reference,";
                         }
                         else
                         {
@@ -2316,8 +2340,8 @@ namespace DLP_NIR_Win_SDK_App_CS
             CSV[24, 1] = UUID + ",";
             CSV[25, 0] = "Main Board Version:,";
             CSV[26, 0] = "Detector Board Version:,";
-            CSV[25, 1] = HWRev + ",";
-            CSV[26, 1] = Detector_Board_HWRev + ",";
+            CSV[25, 1] = MB_HWRev + ",";
+            CSV[26, 1] = DB_HWRev + ",";
 
             string buf = "";
             for (int i = 0; i < 29; i++)
@@ -2339,8 +2363,9 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (CheckBox_SaveCombCSV.IsChecked == true)
             {
                 FileStream fs = new FileStream(FileName, FileMode.Create);
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
                 //SaveHeader(in fs, out StreamWriter sw, false);
-                SaveHeader_CSV(in fs, out StreamWriter sw);
+                SaveHeader_CSV(sw);
 
                 sw.WriteLine("Wavelength (nm),Absorbance (AU),Reference Signal (unitless),Sample Signal (unitless)");
                 for (Int32 i = 0; i < Scan.ScanDataLen; i++)
@@ -2354,10 +2379,11 @@ namespace DLP_NIR_Win_SDK_App_CS
 
             if (CheckBox_SaveICSV.IsChecked == true)
             {
-                String FileName_i = FileName.Insert(FileName.LastIndexOf(".csv"), "_i");
+                String FileName_i = FileName.Insert(FileName.LastIndexOf("_", FileName.Length - 20), "_i");
                 FileStream fs = new FileStream(FileName_i, FileMode.Create);
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
                 //SaveHeader(in fs, out StreamWriter sw, false);
-                SaveHeader_CSV(in fs, out StreamWriter sw);
+                SaveHeader_CSV(sw);
 
                 sw.WriteLine("Wavelength (nm),Sample Signal (unitless)");
                 for (Int32 i = 0; i < Scan.ScanDataLen; i++)
@@ -2371,10 +2397,11 @@ namespace DLP_NIR_Win_SDK_App_CS
 
             if (CheckBox_SaveACSV.IsChecked == true)
             {
-                String FileName_a = FileName.Insert(FileName.LastIndexOf(".csv"), "_a");
+                String FileName_a = FileName.Insert(FileName.LastIndexOf("_", FileName.Length - 20), "_a");
                 FileStream fs = new FileStream(FileName_a, FileMode.Create);
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
                 //SaveHeader(in fs, out StreamWriter sw, false);
-                SaveHeader_CSV(in fs, out StreamWriter sw);
+                SaveHeader_CSV(sw);
 
                 sw.WriteLine("Wavelength (nm),Absorbance (AU)");
                 for (Int32 i = 0; i < Scan.ScanDataLen; i++)
@@ -2388,10 +2415,11 @@ namespace DLP_NIR_Win_SDK_App_CS
 
             if (CheckBox_SaveRCSV.IsChecked == true)
             {
-                String FileName_r = FileName.Insert(FileName.LastIndexOf(".csv"), "_r");
+                String FileName_r = FileName.Insert(FileName.LastIndexOf("_", FileName.Length - 20), "_r");
                 FileStream fs = new FileStream(FileName_r, FileMode.Create);
+                StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8);
                 //SaveHeader(in fs, out StreamWriter sw, false);
-                SaveHeader_CSV(in fs, out StreamWriter sw);
+                SaveHeader_CSV(sw);
 
                 sw.WriteLine("Wavelength (nm),Reflectance (AU)");
                 for (Int32 i = 0; i < Scan.ScanDataLen; i++)
@@ -2402,15 +2430,49 @@ namespace DLP_NIR_Win_SDK_App_CS
                 sw.Flush();  // Clear buffer
                 sw.Close();  // Close file stream
             }
+
+            if (CheckBox_SaveOneCSV.IsChecked == true)
+            {
+                if (CheckBox_SaveOneCSV.IsChecked == true && OneScanFileName == String.Empty)
+                    OneScanFileName = FileName;
+
+                String FileName_one = OneScanFileName.Insert(OneScanFileName.LastIndexOf("_", OneScanFileName.Length - 20), "_one");
+
+                using (FileStream fs = new FileStream(FileName_one, FileMode.Append, FileAccess.Write))
+                {
+                    using (StreamWriter sw = new StreamWriter(fs, System.Text.Encoding.UTF8))
+                    {
+                        if (fs.Length == 0)
+                        {
+                            SaveHeader_CSV(sw);
+
+                            sw.Write("Wavelength (nm),");
+                            for (Int32 i = 0; i < Scan.ScanDataLen; i++)
+                                sw.Write(Scan.WaveLength[i] + ",");
+                            sw.Write("\n");
+
+                            sw.Write("Reference Signal (unitless),");
+                            for (Int32 i = 0; i < Scan.ScanDataLen; i++)
+                                sw.Write(Scan.ReferenceIntensity[i] + ",");
+                            sw.Write("\n");
+                        }
+
+                        sw.Write("Sample Signal (unitless),");
+                        for (Int32 i = 0; i < Scan.ScanDataLen; i++)
+                            sw.Write(Scan.Intensity[i] + ",");
+                        sw.Write("\n");
+                    }
+                }
+            }
         }
 
         private void SaveToJCAMP(String FileName)
         {
             if (CheckBox_SaveIJDX.IsChecked == true)
             {
-                String FileName_i = FileName.Insert(FileName.LastIndexOf(".jdx"), "_i");
+                String FileName_i = FileName.Insert(FileName.LastIndexOf("_", FileName.Length - 20), "_i");
                 FileStream fs = new FileStream(FileName_i, FileMode.Create);
-                SaveHeader(in fs, out StreamWriter sw, true);
+                SaveHeader(fs, out StreamWriter sw, true);
 
                 sw.WriteLine("##XUNITS=Wavelength(nm)");
                 sw.WriteLine("##YUNITS=Intensity");
@@ -2429,9 +2491,9 @@ namespace DLP_NIR_Win_SDK_App_CS
 
             if (CheckBox_SaveAJDX.IsChecked == true)
             {
-                String FileName_a = FileName.Insert(FileName.LastIndexOf(".jdx"), "_a");
+                String FileName_a = FileName.Insert(FileName.LastIndexOf("_", FileName.Length - 20), "_a");
                 FileStream fs = new FileStream(FileName_a, FileMode.Create);
-                SaveHeader(in fs, out StreamWriter sw, true);
+                SaveHeader(fs, out StreamWriter sw, true);
 
                 sw.WriteLine("##XUNITS=Wavelength(nm)");
                 sw.WriteLine("##YUNITS=Absorbance(AU)");
@@ -2450,9 +2512,9 @@ namespace DLP_NIR_Win_SDK_App_CS
 
             if (CheckBox_SaveRJDX.IsChecked == true)
             {
-                String FileName_r = FileName.Insert(FileName.LastIndexOf(".jdx"), "_r");
+                String FileName_r = FileName.Insert(FileName.LastIndexOf("_", FileName.Length - 20), "_r");
                 FileStream fs = new FileStream(FileName_r, FileMode.Create);
-                SaveHeader(in fs, out StreamWriter sw, true);
+                SaveHeader(fs, out StreamWriter sw, true);
 
                 sw.WriteLine("##XUNITS=Wavelength(nm)");
                 sw.WriteLine("##YUNITS=Reflectance(AU)");
@@ -2477,7 +2539,7 @@ namespace DLP_NIR_Win_SDK_App_CS
             
             if (CheckBox_FileNamePrefix.IsChecked == true)
             {
-                String Prefix = Helper.CheckRegex(TextBox_FileNamePrefix.Text);
+                String Prefix = Helper.CheckRegex_Chinese(TextBox_FileNamePrefix.Text);
                 if (Prefix.Length > 50)
                 {
                     Prefix = Prefix.Substring(0, 50);

@@ -19,12 +19,8 @@ namespace DLP_NIR_Win_SDK_App_CS
          */
         private void Application_Exit(object sender, ExitEventArgs e)
         {
-            if (Device.IsConnected())
-            {
-                String HWRev = (!String.IsNullOrEmpty(Device.DevInfo.HardwareRev)) ? Device.DevInfo.HardwareRev.Substring(0, 1) : String.Empty;
-                if ((HWRev != "B" && HWRev != String.Empty && Device.ChkBleExist() == 1) || HWRev == "B" || HWRev == String.Empty)
-                    Device.SetBluetooth(true);
-            }
+            if (Device.IsConnected() && Device.ChkBleExist() == 1)
+                Device.SetBluetooth(true);
 
             Device.Close();
             Device.Exit();

@@ -43,7 +43,7 @@
                             <RadioButton x:Name="RadioButton_LampOn" Content="Keep Lamp On" Margin="10,0,0,0" Checked="RadioButton_LampOn_Checked"/>
                             <RadioButton x:Name="RadioButton_LampOff" Content="Keep Lamp Off" Grid.Column="1" Checked="RadioButton_LampOff_Checked"/>
                             <RadioButton x:Name="RadioButton_LampStableTime" Content="Lamp Stable Time (Unit: ms, Default: 625)" Grid.Row="1" Grid.ColumnSpan="2" Margin="10,0,0,0" VerticalAlignment="Center" Checked="RadioButton_LampStableTime_Checked"/>
-                            <TextBox x:Name="TextBox_LampStableTime" Grid.Column="2" Grid.Row="1" TextWrapping="Wrap" FlowDirection="RightToLeft" Margin="10,0" TextChanged="TextBox_LampStableTime_TextChanged" MinWidth="80"/>
+                            <TextBox x:Name="TextBox_LampStableTime" Grid.Column="2" Grid.Row="1" TextWrapping="Wrap" Margin="10,0" TextChanged="TextBox_LampStableTime_TextChanged" MinWidth="80" HorizontalContentAlignment="Right"/>
                         </Grid>
                     </GroupBox>
                     <GroupBox x:Name="GroupBox_ScanAvg" Header="Scan Average">
@@ -101,8 +101,8 @@
                             <Label Content="#Back-to-Back Scans" Margin="10,0,0,0"/>
                             <Label Content="Scan Delays (s)" Grid.Column="1" Margin="10,0,0,0"/>
                             <Label x:Name="Label_ScanCounts" Content="Scanned: 0" Grid.Column="2" HorizontalAlignment="Right" Margin="0,0,10,0" FlowDirection="RightToLeft"/>
-                            <TextBox x:Name="TextBox_B2BScan" Text="{Binding RepeatedScanCountDown}" Grid.Row="1" TextWrapping="Wrap" Margin="10,0,0,0" FlowDirection="RightToLeft"/>
-                            <TextBox x:Name="TextBox_ScanDelayTime" Grid.Column="1" Grid.Row="1" TextWrapping="Wrap" Text="{Binding ScanInterval}" Margin="10,0,0,0" FlowDirection="RightToLeft"/>
+                            <TextBox x:Name="TextBox_B2BScan" Text="{Binding RepeatedScanCountDown}" Grid.Row="1" TextWrapping="Wrap" Margin="10,0,0,0" TextChanged="TextBox_B2BScan_TextChanged" HorizontalContentAlignment="Right"/>
+                            <TextBox x:Name="TextBox_ScanDelayTime" Grid.Column="1" Grid.Row="1" TextWrapping="Wrap" Text="{Binding ScanInterval}" Margin="10,0,0,0" HorizontalContentAlignment="Right"/>
                         </Grid>
                     </GroupBox>
                     <GroupBox x:Name="GroupBox_SaveScan" Header="Save Scan As">
@@ -123,13 +123,14 @@
                             </Grid.ColumnDefinitions>
                             <CheckBox x:Name="CheckBox_SaveCombCSV" Content="*.csv" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
                             <CheckBox x:Name="CheckBox_SaveDAT" Content="*.dat" Grid.Row="1" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
+                            <CheckBox x:Name="CheckBox_SaveOneCSV" Content="-one.csv" Margin="10,0,0,0" Grid.Row="2"/>
                             <CheckBox x:Name="CheckBox_SaveICSV" Content="-intensity.csv" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
                             <CheckBox x:Name="CheckBox_SaveACSV" Content="-absorbance.csv" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
                             <CheckBox x:Name="CheckBox_SaveRCSV" Content="-reflectance.csv" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
                             <CheckBox x:Name="CheckBox_SaveIJDX" Content="-intensity.jdx" Grid.Column="3" Grid.ColumnSpan="2" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
                             <CheckBox x:Name="CheckBox_SaveAJDX" Content="-absorbance.jdx" Grid.Column="3" Grid.Row="1" Grid.ColumnSpan="2" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
                             <CheckBox x:Name="CheckBox_SaveRJDX" Content="-reflectance.jdx" Grid.Column="3" Grid.Row="2" Grid.ColumnSpan="2" Margin="10,0,0,0" Click="CheckBox_SaveFileFormat_Click"/>
-                            <TextBox x:Name="TextBox_SaveDirPath" Grid.ColumnSpan="4" Grid.Row="3" TextWrapping="Wrap" Margin="10,10,0,0" VerticalScrollBarVisibility="Auto" Height="26"/>
+                            <TextBox x:Name="TextBox_SaveDirPath" Grid.ColumnSpan="4" Grid.Row="3" TextWrapping="Wrap" Margin="10,10,0,0" VerticalScrollBarVisibility="Auto" Height="26" LostFocus="TextBox_SaveDirPath_LostFocus"/>
                             <Button x:Name="Button_SaveDirChange" Content="Directory" Grid.Column="4" Grid.Row="3" HorizontalAlignment="Right" Margin="0,10,10,0" Click="Button_SaveDirChange_Click"/>
                             <CheckBox x:Name="CheckBox_FileNamePrefix" Content="File Name Prefix" Grid.Row="4" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="10,10,0,0"/>
                             <TextBox x:Name="TextBox_FileNamePrefix" Grid.ColumnSpan="3" Grid.Column="2" Grid.Row="4" TextWrapping="Wrap" Margin="0,10,10,0"/>
