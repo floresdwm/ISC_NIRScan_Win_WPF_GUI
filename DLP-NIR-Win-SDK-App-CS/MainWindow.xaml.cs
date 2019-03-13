@@ -374,7 +374,8 @@ namespace DLP_NIR_Win_SDK_App_CS
             if (!Device.IsConnected())
                 return;
 
-            String GUIRev = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            String version = Assembly.GetExecutingAssembly().GetName().Version.ToString();
+            String GUIRev = version.Substring(0, version.LastIndexOf('.'));
             String TivaRev = Device.DevInfo.TivaRev[0].ToString() + "."
                            + Device.DevInfo.TivaRev[1].ToString() + "."
                            + Device.DevInfo.TivaRev[2].ToString() + "."
@@ -595,7 +596,7 @@ namespace DLP_NIR_Win_SDK_App_CS
                         ButtonEnabled = buttonEnabled,
                         Owner = this
                     };
-                    pbw.Show();
+                    pbw.ShowDialog();
                 }));
             })
             {
