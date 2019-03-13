@@ -6,7 +6,7 @@
 
 2. Microsoft .NET Framework: v4.6.1
 
-3. Microsoft Visual C++ Resdistributable (x86/x64): 2010 or 2017
+3. Microsoft Visual C++ Redistributable (x86/x64): 2010 or 2017
 
 # License - InnoSpectra Corp.
 
